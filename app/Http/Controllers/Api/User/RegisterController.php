@@ -27,9 +27,7 @@ class Registercontroller extends Controller
 			return $this->errorResponse(401,"Email or student_ref already exist");
 		}else{
 			$validator = Validator::make($request->all(), [ 
-	        'first_name' => 'required', 
-	        'last_name' => 'required',
-	        'email' => 'required|email',
+		    'email' => 'required|email',
 	        'student_ref' => 'required', 
 	        'password' => 'required', 
 	        'confirm_password' => 'required|same:password', 
