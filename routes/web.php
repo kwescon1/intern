@@ -24,3 +24,4 @@ Route::post('addadvert', 'Web\AddAdvertController@store');
 
 Route::get('addstory', 'Web\AddStoryController@create');
 Route::post('addstory','Web\AddStoryController@store');
+

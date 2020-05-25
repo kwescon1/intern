@@ -8,6 +8,9 @@ use Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Str;
+use App\ResetPasswordCode;
+use Carbon\Carbon;
 
 
 class ForgotPasswordController extends Controller
@@ -15,55 +18,97 @@ class ForgotPasswordController extends Controller
     //
     public function forgotPassword(Request $request){
 
+    	$validator = Validator::make($request->all(), [
+    		'email' =>'required|email',
+    		'student_ref' => 'required',
+    	]);
+
+    	if ($validator->fails()){
+    		Log::warning("there's an error. Validator has failed.");
+            return $this->errorResponse(422,$validator->errors());
+	    }
+
     	$user = User::where('email',$request->email)->where('student_ref',$request->student_ref)->first();
 
-        
-        if(isset($user)){
+    	if(isset($user)){
+    		Log::warning("Sending approval code");
 
-            $validator = Validator::make($request->all(), [ 
-                'email' => 'required|email',
-	        	'student_ref' => 'required',
-            ]);
+   			$name = $user->last_name." ".$user->first_name." ".$user->middle_name;
+   			$student_ref = $user->student_ref;
+   			$email = $user->email;
+   			$code = strtoupper(Str::random(7));
 
-            if ($validator->fails()){
-             
-	            Log::warning("there's an error. Validator has failed.");
-	            return $this->errorResponse(422,$validator->errors());
+   			$savecode = new ResetPasswordCode;
 
-            }else{
+   			$savecode->create([
+   				'email' => $email,
+   				'student_ref' => $student_ref,
+   				'reset_code' => $code
+   			]);
 
-                Log::warning("About to set new password");
+    		$this->sendmail($name,$email,$student_ref,$code);
 
-                return $this->successResponse(['message'=> 'success','success'=> "Allowed to set password"]);
-            }
-        }
 
-        return $this->errorResponse(404,"Wrong email or student reference");
+            return $this->successResponse(['message'=> 'success','success'=> "Password reset code generated. Please check your mail"]);
+    	}
+
+    	return $this->errorResponse(404,"Wrong email or student reference");
     }
 
+    public function verifyCode(Request $request){
+
+    	$validator = Validator::make($request->all(), [
+    		'reset_code' =>'required',
+    	]);
+
+    	if ($validator->fails()){
+    		Log::warning("there's an error. Validator has failed.");
+            return $this->errorResponse(422,$validator->errors());
+	    }
+
+    	$verify = ResetPasswordCode::where('reset_code',$request->reset_code)->first();
+
+    	if(isset($verify)){
+    		$diff_in_minutes = Carbon::now()->diffInMinutes($verify->created_at);
+
+    		if($diff_in_minutes <= 30){
+
+    			return $this->successResponse(['message'=> 'success','user'=> $verify]);
+    		}
+    		return $this->errorResponse(404,"Code has expired. Try again");
+    	}
+
+    	return $this->errorResponse(404,"Invalid code. Thank you");
+    }
+
+        
+    
     public function setPassword(Request $request){
 
-    	$user = User::where('email',$request->email)->where('student_ref',$request->student_ref)->first();
-
     	$validator = Validator::make($request->all(), [  
+    		'email' => 'required|email',
+    		'student_ref' => 'required',
 	        'password' => 'required', 
-	        'confirm_password' => 'required|same:password', 
+	        'confirm_password' => 'required|same:password' 
 	    ]);
 
 		if ($validator->fails()) { 
 
-			Log::warning("password validation failed");
+			Log::warning($validator->errors());
 			return $this->errorResponse(401,$validator->errors());
-		        
-		}else{
-			Log::warning("password validated successfully");
-	    	$user->password = bcrypt($request->password);
-	    	$user->save(); 
-	    
-	        
-	        Log::warning("password changed successfully");
-	        
-	        return $this->successResponse(['message'=> 'success','success'=>"Password changed successfully ".bcrypt($request->password)]);
-    	}
+		}
+
+		Log::warning("Validation successfyl");
+
+		$user = User::where('email',$request->email)->where('student_ref',$request->student_ref)->first();
+
+    	$user->password = bcrypt($request->password);
+    	$user->save(); 
+    
+        
+        Log::warning("password changed successfully");
+        
+        return $this->successResponse(['message'=> 'success','password'=>"Password changed successfully "]);
+	
 	}
 }

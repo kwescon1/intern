@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Mail;
+use Log;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -25,4 +27,23 @@ class Controller extends BaseController
     	return response()->json(["error" => $error],$errorCode);
     }
 
+
+    public function sendmail($name,$email,$student_ref,$code){
+
+    	
+    	$data = [
+    		'name'=> $name,
+    		'code'=> $code,
+    		'ref'=> $student_ref,
+    		'email'=> $email
+    	];
+
+    	Log::info($data);
+    	
+    	Mail::send('mail.mail', $data, function($message) use ($data){
+    		$message->to($data['email'], $data['name'])->subject('Password Reset');
+    	});
+
+    	return;
+    }
 }
