@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth; 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Str;
-use App\ResetPasswordCode;
+use App\VerifyCode;
 use Carbon\Carbon;
 
 
@@ -38,12 +38,12 @@ class ForgotPasswordController extends Controller
    			$email = $user->email;
    			$code = strtoupper(Str::random(7));
 
-   			$savecode = new ResetPasswordCode;
+   			$savecode = new VerifyCode;
 
    			$savecode->create([
    				'email' => $email,
    				'student_ref' => $student_ref,
-   				'reset_code' => $code
+   				'code' => $code
    			]);
 
     		$this->sendmail($name,$email,$student_ref,$code);
@@ -58,7 +58,7 @@ class ForgotPasswordController extends Controller
     public function verifyCode(Request $request){
 
     	$validator = Validator::make($request->all(), [
-    		'reset_code' =>'required',
+    		'code' =>'required',
     	]);
 
     	if ($validator->fails()){
@@ -66,7 +66,7 @@ class ForgotPasswordController extends Controller
             return $this->errorResponse(422,$validator->errors());
 	    }
 
-    	$verify = ResetPasswordCode::where('reset_code',$request->reset_code)->first();
+    	$verify = VerifyCode::where('code',$request->code)->first();
 
     	if(isset($verify)){
     		$diff_in_minutes = Carbon::now()->diffInMinutes($verify->created_at);

@@ -10,17 +10,14 @@ Step 3
 Run this command:
 "composer update"
 
-Step 4
-Run this command:
-"php artisan cache:clear"
 
-Step 5
+Step 4
 create a fresh database in your mysql
 
-Step 6
+Step 5
 check the cloned app's directory for a ".env" file. If there's no .env file, create one and copy the contents of the ".env.example" file into the .env file
 
-Step 7
+Step 6
 In the .env file, set these as follows:
 
 DB_CONNECTION=mysql
@@ -29,6 +26,19 @@ DB_PORT=3306
 DB_DATABASE= "your newly created database name"
 DB_USERNAME=root
 DB_PASSWORD=
+
+MAIL_DRIVER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=youremail@gmail.com
+MAIL_PASSWORD=your email password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=youremail@gmail.com
+MAIL_FROM_NAME="Internship"
+
+Step 7
+Run this command:
+"php artisan cache:clear"
 
 Step 8
 run the following command:
@@ -60,19 +70,59 @@ logging in users
 http://localhost:8000/api/login
 
 registering users
-http://localhost:8000/api/register
+Registering users accepts four parameters
+
+email
+student_ref
+password
+confirmpassword
+
+endpoint-------http://localhost:8000/api/register
+
+
+activating users
+Activating users accepts three parameters
+
+code
+email
+student_ref
+
+endpoint------http://localhost:8000/api/activate
 
 update user info
 http://localhost:8000/api/update
 
 forgot password
-http://localhost:8000/api/forgot
+Forgot password accepts two parameters
+
+email
+student_ref
+
+endpoint-------http://localhost:8000/api/forgot
+
+verify code
+The verify code accepts one parameter
+
+reset_code
+
+endpoint-------http://localhost:8000/api/verifycode
 
 set new password
-http://localhost:8000/api/set
+The set new password accepts four parameters.
+
+email
+student_ref
+password
+confirm_password
+
+endpoint------http://localhost:8000/api/set
+
 
 user details
 http://localhost:8000/api/details
+
+
+
 
 bookmark ad
 http://localhost:8000/api/addbookmark

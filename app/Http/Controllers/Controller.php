@@ -28,9 +28,8 @@ class Controller extends BaseController
     }
 
 
-    public function sendmail($name,$email,$student_ref,$code){
+    public function resetmail($name,$email,$student_ref,$code){
 
-    	
     	$data = [
     		'name'=> $name,
     		'code'=> $code,
@@ -39,9 +38,26 @@ class Controller extends BaseController
     	];
 
     	Log::info($data);
-    	
-    	Mail::send('mail.mail', $data, function($message) use ($data){
+
+    	Mail::send('mail.reset', $data, function($message) use ($data){
     		$message->to($data['email'], $data['name'])->subject('Password Reset');
+    	});
+
+    	return;
+    }
+
+    public function registermail($student_ref,$email,$code){
+
+    	$data = [
+    		'ref'=> $student_ref,
+    		'email'=> $email,
+    		'code' => $code
+    	];
+
+    	Log::info($data);
+
+    	Mail::send('mail.register', $data, function($message) use ($data){
+    		$message->to($data['email'], "")->subject('Account activation');
     	});
 
     	return;
